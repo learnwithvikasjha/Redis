@@ -1,4 +1,9 @@
 # Redis
+
+## Setting up redis Master Replica high availability using redis Sentinels.
+
+[You can watch the youtube step by step tutorial here](https://youtu.be/XxR6M6XQq6I)
+
 ## Docker Command Explanation
 
 docker run --name redis-master -p 6379:6379 --network redis-net -d redis redis-server --appendonly yes
