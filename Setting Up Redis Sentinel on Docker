@@ -1,0 +1,34 @@
+
+	1. Create a docker network:
+docker network create redis-net
+
+	2. Create Docker Master and Replica Containers: 
+	
+docker run --name redis-master -p 6379:6379 --network redis-net -d redis redis-server --appendonly yes
+
+ docker run --name redis-replica1 -p 6380:6379 --network redis-net -d redis redis-server --appendonly yes --slaveof redis-master 6379
+ docker run --name redis-replica2 -p 6381:6379 --network redis-net -d redis redis-server --appendonly yes --slaveof redis-master 6379
+
+	3. Command to check IP address of all the containers:
+docker inspect -f '{{.Name}} - {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -aq)
+
+	4. Create sentinel.conf file and provide master server details.
+echo "sentinel monitor mymaster 172.18.0.2 6379 2" > /apps/redis/sentinel/sentinel_1/sentinel.conf
+echo "sentinel monitor mymaster 172.18.0.2 6379 2" > /apps/redis/sentinel/sentinel_2/sentinel.conf
+echo "sentinel monitor mymaster 172.18.0.2 6379 2" > /apps/redis/sentinel/sentinel_3/sentinel.conf
+
+
+	5. Create three docker containers for Sentinels:
+
+docker run -d --name redis-sentinel_1 -p 26379:26379 --network redis-net -v /apps/redis/sentinel/sentinel_1:/data redis redis-sentinel /data/sentinel.conf
+docker run -d --name redis-sentinel_2 -p 26380:26379 --network redis-net -v /apps/redis/sentinel/sentinel_2:/data redis redis-sentinel /data/sentinel.conf
+docker run -d --name redis-sentinel_3 -p 26381:26379 --network redis-net -v /apps/redis/sentinel/sentinel_3:/data redis redis-sentinel /data/sentinel.conf
+
+
+	6. Follow docker container logs to see if sentinel is running properly
+		docker container logs --follow redis-sentinel_1
+
+	7. Understanding Redis Sentinel Logs
+https://redis.io/docs/management/sentinel/
+
+
